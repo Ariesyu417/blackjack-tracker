@@ -2,101 +2,89 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <!-- 讓網頁在手機上符合螢幕寬度，並禁止縮放，讓它更像原生 App -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- 允許加入手機主畫面後隱藏瀏覽器網址列 (iOS) -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <!-- 允許加入手機主畫面後隱藏瀏覽器網址列 (Android) -->
     <meta name="mobile-web-app-capable" content="yes">
     <title>21點追蹤器</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            background-color: #121212; color: #ffffff; margin: 0; padding: 15px;
+            display: flex; flex-direction: column; align-items: center;
         }
-        .dashboard {
-            background-color: #1e1e1e;
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
-            border-radius: 15px;
-            box-sizing: border-box;
-            text-align: center;
-            margin-bottom: 20px;
+        .dashboard, .input-group, .history-container, .strategy-container {
+            background-color: #1e1e1e; width: 100%; max-width: 400px;
+            padding: 15px; border-radius: 15px; box-sizing: border-box;
+            margin-bottom: 15px;
         }
-        .profit {
-            font-size: 2em;
-            font-weight: bold;
-            margin: 10px 0;
+        .dashboard { text-align: center; }
+        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.9em; color: #aaaaaa; }
+        .bankroll-input {
+            background-color: #2c2c2c; color: white; border: none; border-radius: 5px;
+            padding: 5px; width: 100px; text-align: right; font-size: 1em;
         }
+        .balance { font-size: 1.8em; font-weight: bold; margin: 10px 0; color: #fff; }
+        .profit { font-size: 1.2em; font-weight: bold; }
         .profit.positive { color: #4caf50; }
         .profit.negative { color: #f44336; }
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            color: #aaaaaa;
-            font-size: 0.9em;
+        .stats { display: flex; justify-content: space-around; color: #aaaaaa; font-size: 0.9em; margin-top: 10px; border-top: 1px solid #333; padding-top: 10px; }
+        
+        .input-group label { display: block; color: #aaaaaa; text-align: center; margin-bottom: 10px; }
+        input[type="number"]#betAmount {
+            width: 100%; padding: 15px; font-size: 1.5em; border-radius: 10px;
+            border: none; background-color: #2c2c2c; color: white; text-align: center; box-sizing: border-box;
         }
-        .input-group {
-            width: 100%;
-            max-width: 400px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        input[type="number"] {
-            width: 100%;
-            padding: 15px;
-            font-size: 1.5em;
-            border-radius: 10px;
-            border: none;
-            background-color: #2c2c2c;
-            color: white;
-            text-align: center;
-            box-sizing: border-box;
-        }
-        .btn-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            width: 100%;
-            max-width: 400px;
-        }
-        button {
-            padding: 20px 10px;
-            font-size: 1.2em;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            color: white;
-            cursor: pointer;
-        }
+        
+        .btn-row { display: grid; gap: 10px; width: 100%; max-width: 400px; margin-bottom: 10px; }
+        .btn-row.three-cols { grid-template-columns: 1fr 1fr 1fr; }
+        .btn-row.two-cols { grid-template-columns: 1fr 1fr; }
+        button { padding: 15px 5px; font-size: 1.1em; font-weight: bold; border: none; border-radius: 10px; color: white; cursor: pointer; }
         button:active { opacity: 0.8; }
+        
         .btn-win { background-color: #4caf50; }
-        .btn-loss { background-color: #f44336; }
         .btn-push { background-color: #9e9e9e; }
-        .btn-reset {
-            background-color: transparent;
-            color: #f44336;
-            border: 1px solid #f44336;
-            margin-top: 30px;
-            width: 100%;
-            max-width: 400px;
-        }
+        .btn-loss { background-color: #f44336; }
+        .btn-bj { background-color: #ffc107; color: #000; }
+        .btn-surrender { background-color: #ff9800; }
+        
+        .history-container { height: 160px; overflow-y: auto; padding-top: 10px; }
+        .history-title { font-size: 0.9em; color: #aaaaaa; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; display: flex; justify-content: space-between; }
+        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #333; font-size: 0.9em; }
+        .history-time { color: #666; font-size: 0.8em; }
+        
+        .btn-reset { background-color: transparent; color: #f44336; border: 1px solid #f44336; width: 100%; max-width: 400px; margin-top: 5px; }
+        
+        /* 基本策略表專用 CSS */
+        .btn-toggle-strategy { background-color: #333; width: 100%; max-width: 400px; margin-bottom: 15px; font-size: 1em; padding: 10px; border: 1px solid #555; }
+        .strategy-container { display: none; padding: 10px; overflow-x: auto; }
+        .strategy-legend { display: flex; justify-content: space-around; font-size: 0.8em; margin-bottom: 10px; }
+        .legend-item { padding: 2px 6px; border-radius: 3px; color: black; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.75em; text-align: center; }
+        th, td { border: 1px solid #444; padding: 4px 2px; }
+        th { background-color: #333; color: white; }
+        .bg-h { background-color: #a5d6a7; color: black; } /* 加牌 綠色 */
+        .bg-s { background-color: #ef9a9a; color: black; } /* 停牌 紅色 */
+        .bg-d { background-color: #90caf9; color: black; } /* 雙倍 藍色 */
+        .bg-p { background-color: #ffe082; color: black; } /* 分牌 黃色 */
     </style>
 </head>
 <body>
 
     <div class="dashboard">
-        <div>淨利潤 (Net Profit)</div>
-        <div id="netProfitDisplay" class="profit">0</div>
+        <div class="row">
+            <span>初始資金 (Bankroll)</span>
+            <input type="number" id="initialBankroll" class="bankroll-input" placeholder="0" onchange="updateBankroll()">
+        </div>
+        <div class="row">
+            <span>目前餘額</span>
+        </div>
+        <div id="balanceDisplay" class="balance">0</div>
+        
+        <div class="row" style="justify-content: center; gap: 10px;">
+            <span>淨利潤:</span>
+            <span id="netProfitDisplay" class="profit">0</span>
+        </div>
+        
         <div class="stats">
             <span id="totalHandsDisplay">總手數: 0</span>
             <span id="winRateDisplay">勝率: 0%</span>
@@ -104,81 +92,167 @@
     </div>
 
     <div class="input-group">
-        <label for="betAmount" style="color: #aaaaaa; text-align: center;">本局下注金額</label>
-        <input type="number" id="betAmount" inputmode="numeric" placeholder="例如: 100">
+        <label for="betAmount">本局下注金額</label>
+        <input type="number" id="betAmount" inputmode="numeric" placeholder="100">
     </div>
 
-    <div class="btn-group">
+    <div class="btn-row three-cols">
         <button class="btn-win" onclick="recordHand('win')">贏</button>
         <button class="btn-push" onclick="recordHand('push')">平手</button>
         <button class="btn-loss" onclick="recordHand('loss')">輸</button>
+    </div>
+    <div class="btn-row two-cols">
+        <button class="btn-bj" onclick="recordHand('bj')">黑傑克 (1.5倍)</button>
+        <button class="btn-surrender" onclick="recordHand('surrender')">投降 (退一半)</button>
+    </div>
+
+    <button class="btn-toggle-strategy" onclick="toggleStrategy()">📖 顯示 / 隱藏 基本策略表</button>
+
+    <div class="strategy-container" id="strategyTable">
+        <div class="strategy-legend">
+            <span class="legend-item bg-h">H 加牌</span>
+            <span class="legend-item bg-s">S 停牌</span>
+            <span class="legend-item bg-d">D 雙倍</span>
+            <span class="legend-item bg-p">P 分牌</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>玩家\莊家</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>A</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 硬牌 (Hard Totals) -->
+                <tr><th>17+</th><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td></tr>
+                <tr><th>16</th><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td></tr>
+                <tr><th>15</th><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td></tr>
+                <tr><th>13-14</th><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td></tr>
+                <tr><th>12</th><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td></tr>
+                <tr><th>11</th><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-h">H</td></tr>
+                <tr><th>10</th><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-h">H</td><td class="bg-h">H</td></tr>
+                <tr><th>9</th><td class="bg-h">H</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td></tr>
+                <tr><th>5-8</th><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td></tr>
+                <!-- 軟牌 (Soft Totals) -->
+                <tr><th>A,8-9</th><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td></tr>
+                <tr><th>A,7</th><td class="bg-s">S</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td></tr>
+                <tr><th>A,6</th><td class="bg-h">H</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td></tr>
+                <tr><th>A,4-5</th><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td></tr>
+                <tr><th>A,2-3</th><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td></tr>
+                <!-- 對子 (Pairs) -->
+                <tr><th>A,A / 8,8</th><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td></tr>
+                <tr><th>10,10</th><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td><td class="bg-s">S</td></tr>
+                <tr><th>9,9</th><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-s">S</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-s">S</td><td class="bg-s">S</td></tr>
+                <tr><th>7,7</th><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td></tr>
+                <tr><th>6,6</th><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td></tr>
+                <tr><th>5,5</th><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-d">D</td><td class="bg-h">H</td><td class="bg-h">H</td></tr>
+                <tr><th>2,2-4,4</th><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-p">P</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td><td class="bg-h">H</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="history-container">
+        <div class="history-title">
+            <span>最近歷史紀錄</span>
+        </div>
+        <div id="historyList"></div>
     </div>
 
     <button class="btn-reset" onclick="resetData()">清除所有紀錄</button>
 
     <script>
-        // 初始化資料
-        let data = JSON.parse(localStorage.getItem('bj_tracker_data')) || {
-            netProfit: 0,
-            totalHands: 0,
-            wins: 0,
-            losses: 0,
-            pushes: 0
+        let data = JSON.parse(localStorage.getItem('bj_tracker_data_v2')) || {
+            initialBankroll: 0, netProfit: 0, totalHands: 0, wins: 0, losses: 0, pushes: 0, history: []
         };
 
         const betInput = document.getElementById('betAmount');
+        const bankrollInput = document.getElementById('initialBankroll');
+        bankrollInput.value = data.initialBankroll || '';
 
-        // 更新畫面顯示
+        function toggleStrategy() {
+            const table = document.getElementById('strategyTable');
+            table.style.display = (table.style.display === 'none' || table.style.display === '') ? 'block' : 'none';
+        }
+
+        function updateBankroll() {
+            let val = parseFloat(bankrollInput.value);
+            data.initialBankroll = isNaN(val) ? 0 : val;
+            saveData();
+            updateUI();
+        }
+
         function updateUI() {
+            let currentBalance = data.initialBankroll + data.netProfit;
+            document.getElementById('balanceDisplay').innerText = currentBalance;
+            
             const profitEl = document.getElementById('netProfitDisplay');
             profitEl.innerText = (data.netProfit > 0 ? '+' : '') + data.netProfit;
             profitEl.className = 'profit ' + (data.netProfit > 0 ? 'positive' : (data.netProfit < 0 ? 'negative' : ''));
             
             document.getElementById('totalHandsDisplay').innerText = `總手數: ${data.totalHands}`;
-            
             let winRate = 0;
-            let resolvedHands = data.wins + data.losses; // 計算勝率通常排除平手
+            let resolvedHands = data.wins + data.losses; 
             if (resolvedHands > 0) {
                 winRate = Math.round((data.wins / resolvedHands) * 100);
             }
             document.getElementById('winRateDisplay').innerText = `勝率: ${winRate}%`;
+
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            data.history.forEach(item => {
+                let colorClass = item.profitChange > 0 ? 'color: #4caf50;' : (item.profitChange < 0 ? 'color: #f44336;' : 'color: #aaaaaa;');
+                let sign = item.profitChange > 0 ? '+' : '';
+                historyList.innerHTML += `
+                    <div class="history-item">
+                        <div>
+                            <span class="history-time">${item.time}</span> 
+                            <span style="margin-left:10px;">${item.label} (注: ${item.bet})</span>
+                        </div>
+                        <strong style="${colorClass}">${sign}${item.profitChange}</strong>
+                    </div>
+                `;
+            });
         }
 
-        // 記錄結果
         function recordHand(outcome) {
             const bet = parseFloat(betInput.value);
             if (isNaN(bet) || bet <= 0) {
-                alert("請輸入有效的下注金額！");
+                alert("請先輸入有效的下注金額！");
                 return;
             }
 
             data.totalHands++;
+            let profitChange = 0;
+            let label = '';
 
-            if (outcome === 'win') {
-                data.netProfit += bet;
-                data.wins++;
-            } else if (outcome === 'loss') {
-                data.netProfit -= bet;
-                data.losses++;
-            } else if (outcome === 'push') {
-                data.pushes++;
-            }
+            if (outcome === 'win') { profitChange = bet; data.wins++; label = '贏'; } 
+            else if (outcome === 'loss') { profitChange = -bet; data.losses++; label = '輸'; } 
+            else if (outcome === 'push') { profitChange = 0; data.pushes++; label = '平手'; } 
+            else if (outcome === 'bj') { profitChange = bet * 1.5; data.wins++; label = '黑傑克'; } 
+            else if (outcome === 'surrender') { profitChange = -bet * 0.5; data.losses++; label = '投降'; }
 
-            // 存入手機瀏覽器的 LocalStorage
-            localStorage.setItem('bj_tracker_data', JSON.stringify(data));
+            data.netProfit += profitChange;
+            
+            let now = new Date();
+            let timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            
+            data.history.unshift({ label, bet, profitChange, time: timeString });
+            if (data.history.length > 50) data.history.pop();
+
+            saveData();
             updateUI();
         }
 
-        // 清除紀錄
+        function saveData() { localStorage.setItem('bj_tracker_data_v2', JSON.stringify(data)); }
+
         function resetData() {
-            if(confirm("確定要清除所有紀錄嗎？")) {
-                data = { netProfit: 0, totalHands: 0, wins: 0, losses: 0, pushes: 0 };
-                localStorage.removeItem('bj_tracker_data');
+            if(confirm("確定要清除所有紀錄並將資金歸零嗎？")) {
+                data = { initialBankroll: 0, netProfit: 0, totalHands: 0, wins: 0, losses: 0, pushes: 0, history: [] };
+                bankrollInput.value = '';
+                saveData();
                 updateUI();
             }
         }
 
-        // 初始載入時更新一次畫面
         updateUI();
     </script>
 </body>
