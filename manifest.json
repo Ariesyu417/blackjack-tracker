@@ -1,0 +1,8 @@
+{
+  "name": "21點追蹤器",
+  "short_name": "21點",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#1e1e1e"
+}
